@@ -2,25 +2,28 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+// TODO SET, MOV, DIV, Branching
+
 typedef enum {
     MOV,
     PSH,
     ADD,
     DIV,
+    MUL,
     POP,
     SET,
     HLT
 } InstructionSet;
 
 typedef enum {
-    A, B, C, D, E, F,
+    AX, BX, CX, DX, EX, FX,
     NUM_OF_REGISTERS
 } Registers;
 
 const int program[] = {
+    PSH, 5,
     PSH, 6,
-    PSH, 7,
-    ADD,
+    MUL,
     POP,
     HLT
 };
@@ -47,16 +50,24 @@ void eval(int instruction) {
             break;
         }
         case POP: {
-            int val_popped = stack[sp--];\
-            printf("popped %d\n", val_popped);
+            registers[AX] = stack[sp--];\
+            printf("popped %d\n", registers[AX]);
             break;
         }
         case ADD: {
-            int a = stack[sp--];
-            int b = stack[sp--];
-            int result = a + b;
+            registers[AX] = stack[sp--];
+            registers[BX] = stack[sp--];
+            registers[CX] = registers[AX] + registers[BX];
             sp++;
-            stack[sp] = result;
+            stack[sp] = registers[CX];
+            break;
+        }
+        case MUL: {
+            registers[AX] = stack[sp--];
+            registers[BX] = stack[sp--];
+            registers[CX] = registers[AX] * registers[BX];
+            sp++;
+            stack[sp] = registers[CX];
             break;
         }
     }
