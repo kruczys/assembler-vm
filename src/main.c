@@ -16,26 +16,24 @@ typedef enum {
 } InstructionSet;
 
 typedef enum {
-    AX, BX, CX, DX, EX, FX,
+    IP, SP, AX, BX, CX, DX, EX, FX, 
     NUM_OF_REGISTERS
 } Registers;
 
 const int program[] = {
-    PSH, 4,
-    PSH, 2,
+    PSH, 13,
+    PSH, 11,
     DIV,
     POP,
     HLT
 };
 
-int ip = 0;
-int sp = -1;
 int stack[256];
 int registers[NUM_OF_REGISTERS];
 bool running = true;
 
 int fetch() {
-    return program[ip];
+    return program[registers[IP]];
 }
 
 void eval(int instruction) {
@@ -51,40 +49,42 @@ void eval(int instruction) {
             break;
         }
         case PSH: {
-            sp++;
-            stack[sp] = program[++ip];
+            registers[SP]++;
+            stack[registers[SP]] = program[++registers[IP]];
             break;
         }
         case POP: {
-            registers[AX] = stack[sp--];\
+            registers[AX] = stack[registers[SP]--];\
             printf("popped %d\n", registers[AX]);
             break;
         }
         case ADD: {
-            registers[AX] = stack[sp--];
-            registers[BX] = stack[sp--];
+            registers[AX] = stack[registers[SP]--];
+            registers[BX] = stack[registers[SP]--];
             registers[CX] = registers[AX] + registers[BX];
-            sp++;
-            stack[sp] = registers[CX];
+            registers[SP]++;
+            stack[registers[SP]] = registers[CX];
             break;
         }
         case MUL: {
-            registers[AX] = stack[sp--];
-            registers[BX] = stack[sp--];
+            registers[AX] = stack[registers[SP]--];
+            registers[BX] = stack[registers[SP]--];
             registers[CX] = registers[AX] * registers[BX];
-            sp++;
-            stack[sp] = registers[CX];
+            registers[SP]++;
+            stack[registers[SP]] = registers[CX];
             break;
         }
         case DIV : {
-            registers[AX] = stack[sp--];
-            registers[BX] = stack[sp--];
-            if (registers[AX] > registers[BX] || registers[BX] == 0)
-                printf("Div error");
+            registers[AX] = stack[registers[SP]--];
+            registers[BX] = stack[registers[SP]--];
+            if (registers[AX] > registers[BX] || registers[AX] == 0) {
+                printf("Pamietaj cholero! Nie dziel przez zero!\n");
+                exit(EXIT_SUCCESS);
+            }
             else {
                 registers[CX] = registers[BX] / registers[AX];
-                sp++;
-                stack[sp] = registers[CX];
+                registers[SP]++;
+                stack[registers[SP]] = registers[CX];
             }
             break;
         }
@@ -92,9 +92,11 @@ void eval(int instruction) {
 }
 
 int main() {
+    registers[IP] = 0;
+    registers[SP] = -1;
     while (running) {
         eval(fetch());
-        ip++;
+        registers[IP]++;
     }
     exit(EXIT_SUCCESS);
 }
