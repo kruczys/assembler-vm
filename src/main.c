@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 // TODO SET, MOV, DIV, Branching
 
@@ -10,20 +11,23 @@ typedef enum {
     ADD,
     DIV,
     MUL,
+    SUB,
     POP,
     SET,
     HLT
 } InstructionSet;
 
 typedef enum {
-    IP, SP, AX, BX, CX, DX, EX, FX, 
+    IP, SP, AX, BX, CX, DX, EX, FX, QX1, QX2, RX,
     NUM_OF_REGISTERS
 } Registers;
 
 const int program[] = {
-    PSH, 13,
-    PSH, 11,
-    DIV,
+    SET, AX, 10,
+    PSH, AX, 
+    SET, BX, 20,
+    PSH, BX, 
+    ADD,
     POP,
     HLT
 };
@@ -43,9 +47,11 @@ void eval(int instruction) {
             break;
         }
         case MOV: {
+            registers[program[++registers[IP]]] = registers[program[++registers[IP]]];
             break;
         }
         case SET: {
+            registers[program[++registers[IP]]] = program[++registers[IP]];
             break;
         }
         case PSH: {
@@ -59,32 +65,40 @@ void eval(int instruction) {
             break;
         }
         case ADD: {
-            registers[AX] = stack[registers[SP]--];
-            registers[BX] = stack[registers[SP]--];
-            registers[CX] = registers[AX] + registers[BX];
+            registers[QX1] = stack[registers[SP]--];
+            registers[QX2] = stack[registers[SP]--];
+            registers[RX] = registers[QX1] + registers[QX2];
             registers[SP]++;
-            stack[registers[SP]] = registers[CX];
+            stack[registers[SP]] = registers[RX];
+            break;
+        }
+        case SUB: {
+            registers[QX1] = stack[registers[SP]--];
+            registers[QX2] = stack[registers[SP]--];
+            registers[RX] = registers[QX2] - registers[QX1];
+            registers[SP]++;
+            stack[registers[SP]] = registers[RX];
             break;
         }
         case MUL: {
-            registers[AX] = stack[registers[SP]--];
-            registers[BX] = stack[registers[SP]--];
-            registers[CX] = registers[AX] * registers[BX];
+            registers[QX1] = stack[registers[SP]--];
+            registers[QX2] = stack[registers[SP]--];
+            registers[RX] = registers[QX1] * registers[QX2];
             registers[SP]++;
-            stack[registers[SP]] = registers[CX];
+            stack[registers[SP]] = registers[RX];
             break;
         }
         case DIV : {
-            registers[AX] = stack[registers[SP]--];
-            registers[BX] = stack[registers[SP]--];
-            if (registers[AX] > registers[BX] || registers[AX] == 0) {
+            registers[QX1] = stack[registers[SP]--];
+            registers[QX2] = stack[registers[SP]--];
+            if (registers[QX1] > registers[QX2] || registers[QX1] == 0) {
                 printf("Pamietaj cholero! Nie dziel przez zero!\n");
                 exit(EXIT_SUCCESS);
             }
             else {
-                registers[CX] = registers[BX] / registers[AX];
+                registers[RX] = registers[QX2] / registers[QX1];
                 registers[SP]++;
-                stack[registers[SP]] = registers[CX];
+                stack[registers[SP]] = registers[RX];
             }
             break;
         }
