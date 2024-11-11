@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include <unistd.h>
 
 // TODO SET, MOV, DIV, Branching
 
@@ -24,10 +23,7 @@ typedef enum {
 
 const int program[] = {
     SET, AX, 10,
-    PSH, AX, 
-    SET, BX, 20,
-    PSH, BX, 
-    ADD,
+    PSH, AX,
     POP,
     HLT
 };
@@ -52,11 +48,12 @@ void eval(int instruction) {
         }
         case SET: {
             registers[program[++registers[IP]]] = program[++registers[IP]];
+            printf("%d", registers[AX]);
             break;
         }
         case PSH: {
             registers[SP]++;
-            stack[registers[SP]] = program[++registers[IP]];
+            stack[registers[SP]] = registers[program[++registers[IP]]];
             break;
         }
         case POP: {
