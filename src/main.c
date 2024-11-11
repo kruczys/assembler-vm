@@ -21,9 +21,9 @@ typedef enum {
 } Registers;
 
 const int program[] = {
-    PSH, 5,
-    PSH, 6,
-    MUL,
+    PSH, 4,
+    PSH, 2,
+    DIV,
     POP,
     HLT
 };
@@ -42,6 +42,12 @@ void eval(int instruction) {
     switch (instruction) {
         case HLT: {
             running = false;
+            break;
+        }
+        case MOV: {
+            break;
+        }
+        case SET: {
             break;
         }
         case PSH: {
@@ -68,6 +74,18 @@ void eval(int instruction) {
             registers[CX] = registers[AX] * registers[BX];
             sp++;
             stack[sp] = registers[CX];
+            break;
+        }
+        case DIV : {
+            registers[AX] = stack[sp--];
+            registers[BX] = stack[sp--];
+            if (registers[AX] > registers[BX] || registers[BX] == 0)
+                printf("Div error");
+            else {
+                registers[CX] = registers[BX] / registers[AX];
+                sp++;
+                stack[sp] = registers[CX];
+            }
             break;
         }
     }
