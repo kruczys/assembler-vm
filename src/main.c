@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-// TODO SET, MOV, DIV, Branching
+// TODO SET, MOV, CMP, Branching
 
 typedef enum {
     MOV,
@@ -13,6 +13,7 @@ typedef enum {
     SUB,
     POP,
     SET,
+    CMP,
     HLT
 } InstructionSet;
 
@@ -24,6 +25,9 @@ typedef enum {
 const int program[] = {
     SET, AX, 10,
     PSH, AX,
+    SET, BX, 22,
+    PSH, BX,
+    MUL,
     POP,
     HLT
 };
@@ -43,12 +47,15 @@ void eval(int instruction) {
             break;
         }
         case MOV: {
-            registers[program[++registers[IP]]] = registers[program[++registers[IP]]];
+            registers[IP]++;
+            registers[program[registers[IP]]] = registers[program[registers[IP] + 1]];
+            registers[IP]++;
             break;
         }
         case SET: {
-            registers[program[++registers[IP]]] = program[++registers[IP]];
-            printf("%d", registers[AX]);
+            registers[IP]++;
+            registers[program[registers[IP]]] = program[registers[IP]+1];
+            registers[IP]++;
             break;
         }
         case PSH: {
