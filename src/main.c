@@ -7,8 +7,10 @@
 
 typedef enum {
     MOV,
+    XCHG,
     PSH,
-    ADD,
+    SADD,
+    XADD,
     DIV,
     MUL,
     SUB,
@@ -19,16 +21,19 @@ typedef enum {
 } InstructionSet;
 
 typedef enum {
-    IP, SP, AX, BX, CX, DX, EX, FX, QX1, QX2, RX,
+    IP, SP, RAX, RBX, RCX, RDX, REX, RFX, QX1, QX2, RX,
     NUM_OF_REGISTERS
 } Registers;
 
 const int program[] = {
-    SET, AX, 10,
-    PSH, AX,
+    SET, RAX, 0,
+    SET, RBX, 1,
+    XCHG, RAX, RBX,
+    XADD, RAX, RBX,
+    PSH, RAX,
     POP,
-    SET, IP, 0,
-    HLT
+    SET, IP, 2,
+    HLT,
 };
 
 int stack[256];
@@ -51,9 +56,16 @@ void eval(int instruction) {
             registers[IP]++;
             break;
         }
+        case XCHG: {
+            registers[IP]++;
+            registers[program[registers[IP]]] += registers[program[registers[IP] + 1]];
+            registers[program[registers[IP] + 1]] = registers[program[registers[IP]]] - registers[program[registers[IP] + 1]];
+            registers[program[registers[IP]]] -= registers[program[registers[IP] + 1]];
+            registers[IP]++;
+        }
         case SET: {
             registers[IP]++;
-            registers[program[registers[IP]]] = program[registers[IP]+1];
+            registers[program[registers[IP]]] = program[registers[IP] + 1];
             registers[IP]++;
             break;
         }
@@ -63,16 +75,21 @@ void eval(int instruction) {
             break;
         }
         case POP: {
-            registers[AX] = stack[registers[SP]--];\
-            printf("popped %d\n", registers[AX]);
+            printf("popped %d\n", stack[registers[SP]--]);
             break;
         }
-        case ADD: {
+        case SADD: {
             registers[QX1] = stack[registers[SP]--];
             registers[QX2] = stack[registers[SP]--];
             registers[RX] = registers[QX1] + registers[QX2];
             registers[SP]++;
             stack[registers[SP]] = registers[RX];
+            break;
+        }
+        case XADD: {
+            registers[QX1] = registers[program[++registers[IP]]];
+            registers[QX2] = registers[program[++registers[IP]]];
+            registers[program[registers[IP] - 1]] = registers[QX1] + registers[QX2];
             break;
         }
         case SUB: {
