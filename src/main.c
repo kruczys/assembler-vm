@@ -1,8 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <unistd.h>
 
-// TODO SET, MOV, CMP, Branching
+// TODO CMP
 
 typedef enum {
     MOV,
@@ -25,10 +26,8 @@ typedef enum {
 const int program[] = {
     SET, AX, 10,
     PSH, AX,
-    SET, BX, 22,
-    PSH, BX,
-    MUL,
     POP,
+    SET, IP, 0,
     HLT
 };
 
