@@ -32,7 +32,7 @@ const int program[] = {
     PSH, RAX,
     POP,
     MOV, RCX, RAX,
-    CMP, RCX, 100, 2,
+    CMP, RAX, 100, 2,
     HLT
 };
 
