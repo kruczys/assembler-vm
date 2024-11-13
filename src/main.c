@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 
-// TODO CMP
+//TODO Fibonacci
 
 typedef enum {
     MOV,
@@ -30,8 +30,9 @@ const int program[] = {
     SET, RBX, 1,
     XADD, RAX, RBX,
     PSH, RAX,
-    POP, 
-    CMP, RAX, 10, 2, // Compare RAX to 10 if more or equal set instruction pointer to 2 else do nothing
+    POP,
+    MOV, RCX, RAX,
+    CMP, RCX, 100, 2,
     HLT
 };
 
@@ -73,8 +74,9 @@ void eval(int instruction) {
             registers[IP]++;
             if (registers[program[registers[IP]]] < program[++registers[IP]])
                 registers[IP] = program[++registers[IP]];
-            else
+            else {
                 registers[IP]++;
+            }
             break;
         }
         case PSH: {
