@@ -28,12 +28,11 @@ typedef enum {
 const int program[] = {
     SET, RAX, 0,
     SET, RBX, 1,
-    XCHG, RAX, RBX,
     XADD, RAX, RBX,
     PSH, RAX,
-    POP,
-    SET, IP, 2,
-    HLT,
+    POP, 
+    CMP, RAX, 10, 2, // Compare RAX to 10 if more or equal set instruction pointer to 2 else do nothing
+    HLT
 };
 
 int stack[256];
@@ -62,11 +61,20 @@ void eval(int instruction) {
             registers[program[registers[IP] + 1]] = registers[program[registers[IP]]] - registers[program[registers[IP] + 1]];
             registers[program[registers[IP]]] -= registers[program[registers[IP] + 1]];
             registers[IP]++;
+            break;
         }
         case SET: {
             registers[IP]++;
             registers[program[registers[IP]]] = program[registers[IP] + 1];
             registers[IP]++;
+            break;
+        }
+        case CMP: {
+            registers[IP]++;
+            if (registers[program[registers[IP]]] < program[++registers[IP]])
+                registers[IP] = program[++registers[IP]];
+            else
+                registers[IP]++;
             break;
         }
         case PSH: {
